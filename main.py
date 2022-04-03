@@ -1,4 +1,5 @@
 import os
+import string
 from cryptography.fernet import Fernet
 
 # safeguard = input("Please enter the safeguard password:")
@@ -25,11 +26,15 @@ def write_key():
 
 #reads and returns key stored in filekey.txt
 def read_key():
-    with open('filekey.txt', 'rb') as filekey:
-        key = filekey.read()
+    try:
+        with open('filekey.txt', 'rb') as filekey:
+            key = filekey.read()
 
-    fernet = Fernet(key)
-    return fernet
+        fernet = Fernet(key)
+        return fernet
+    except:
+        print("The key does not exist")
+
 
 #uses fernet key to encrypt all files in file_paths list
 def encrypt_files(file_paths, fernet):
@@ -53,25 +58,68 @@ def decrypt_files(file_paths, fernet):
         with open(f, 'wb') as dec_file:
             dec_file.write(decrypted)
 
+#returns whether a keyword was found in a file (only tested with .txt)
+def keyword_check(keyword, f):
+    file = open(f, 'r').read()
+    for word in file.split():       
+        word = word.translate(str.maketrans('', '', string.punctuation))
+        if word.lower() == keyword:
+            return True
+    return False
+
+#returns whether a file is encrypted or not
+def isEncrypted(f):
+    #probably not the best of way of doing this, only tested with txt files
+    #would also let an unencrypted file that starts with gAAA for whatever reason accidentally return true
+    file = open(f, 'r').read()
+    return file[0:4] == "gAAA"
+
+
 #sequence to generate a new key and encrypt files with it
 def encrypt(file_paths):
     write_key()
     fernet = read_key()
-    encrypt_files(file_paths, fernet)
-
-#sequence to decrypt the already encrypted files using the key that already exists
-#returns error if files weren't encrypted beforehand
-def decrypt(file_paths):
-    fernet = read_key()
-    decrypt_files(file_paths, fernet)
-
-def main():
-    file_paths = generate_file_list('C:\\Users\\ericw\\Documents\\CECS378Test')
 
     for f in file_paths:
         print(f)
 
-    decrypt(file_paths)
+    encrypt_files(file_paths, fernet)
+
+#sequence to generate a new key and encrypt files that contain a specific keyword
+def encrypt_keyword(file_paths, keyword):
+    write_key()
+    fernet = read_key()
+
+    target_file_paths = []
+
+    for f in file_paths:
+        if (keyword_check(keyword, f)):
+            target_file_paths.append(f)
+            print(f)
+
+    encrypt_files(target_file_paths, fernet)
+
+#sequence to decrypt the already encrypted files using the key that already exists
+def decrypt(file_paths):
+    fernet = read_key()
+    if (fernet != None):
+        target_file_paths = []
+
+        for f in file_paths:
+            if (isEncrypted(f)):
+                target_file_paths.append(f)
+                print(f)
+
+        if (len(target_file_paths) == 0):
+            print("No files were encrypted")
+        else:
+            decrypt_files(target_file_paths, fernet)
+
+def main():
+    file_paths = generate_file_list('C:\\Users\\ericw\\Documents\\CECS378Test')
+
+    # encrypt_keyword(file_paths, "a")
+    # decrypt(file_paths)
 
 if __name__ == "__main__":
     main()
