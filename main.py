@@ -116,6 +116,7 @@ def decrypt(file_paths):
             decrypt_files(target_file_paths, fernet)
 
 def main():
+    #will need to get current working directory or something later
     file_paths = generate_file_list('C:\\Users\\ericw\\Documents\\CECS378Test')
 
     # encrypt_keyword(file_paths, "a")
